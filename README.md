@@ -1,6 +1,16 @@
 # canvas-draw
 
+![License MIT](https://img.shields.io/npm/l/express.svg)
+
+[demo](http://louiszhai.github.io/res/canvasDraw/)
+
 > use canvas to draw
+
+## Clone
+
+```
+git clone git@github.com:Louiszhai/canvas-draw.git
+```
 
 ## Build Setup
 
@@ -16,13 +26,4 @@ npm run build
 
 # build for production and view the bundle analyzer report
 npm run build --report
-
-# run unit tests
-npm run unit
-
-# run e2e tests
-npm run e2e
-
-# run all tests
-npm test
 ```
