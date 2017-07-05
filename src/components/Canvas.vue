@@ -44,14 +44,13 @@ export default {
   methods: {
     initCanvas() {
       const canvas = document.querySelector('canvas');
-      this.draw = new Draw().init(canvas);
+      this.draw = new Draw(canvas);
     },
     clear() {
       this.draw.clear();
     },
     download() {
-      const canvas = this.draw.rotate(180);
-      this.draw.downloadPNGImage(this.draw.getJPGImage(canvas), 'jpeg');
+      this.draw.downloadPNGImage(this.draw.getPNGImage());
     },
   },
 };

@@ -2,87 +2,91 @@
  * Created by louizhai on 17/6/30.
  * description: Use canvas to draw.
  */
-function Draw() {}
-Draw.prototype = {
-  init(canvas, config = {}) {
-    let { width, height } = window.getComputedStyle(canvas, null);
-    width = width.replace('px', '');
-    height = height.replace('px', '');
+function Draw(canvas, config = {}) {
+  if (!(this instanceof Draw)) {
+    return new Draw(canvas, config);
+  }
+  let { width, height } = window.getComputedStyle(canvas, null);
+  width = width.replace('px', '');
+  height = height.replace('px', '');
 
-    this.canvas = canvas;
-    this.context = canvas.getContext('2d');
-    this.width = width;
-    this.height = height;
-    const context = this.context;
+  this.canvas = canvas;
+  this.context = canvas.getContext('2d');
+  this.width = width;
+  this.height = height;
+  const context = this.context;
 
-    // 根据设备像素比优化canvas绘图
-    const devicePixelRatio = window.devicePixelRatio;
-    if (devicePixelRatio) {
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      canvas.height = height * devicePixelRatio;
-      canvas.width = width * devicePixelRatio;
-      context.scale(devicePixelRatio, devicePixelRatio);
-    } else {
-      canvas.width = width;
-      canvas.height = height;
+  // 根据设备像素比优化canvas绘图
+  const devicePixelRatio = window.devicePixelRatio;
+  if (devicePixelRatio) {
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    canvas.height = height * devicePixelRatio;
+    canvas.width = width * devicePixelRatio;
+    context.scale(devicePixelRatio, devicePixelRatio);
+  } else {
+    canvas.width = width;
+    canvas.height = height;
+  }
+
+  context.lineWidth = 10;
+  context.strokeStyle = 'black';
+  context.lineCap = 'round';
+  context.lineJoin = 'round';
+  context.imageSmoothingEnabled = true;
+  Object.assign(context, config);
+
+  const { left, top } = canvas.getBoundingClientRect();
+  const point = {};
+  const isMobile = /phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone/i.test(navigator.userAgent);
+  let pressed = false;
+
+  const paint = (signal) => {
+    switch (signal) {
+      case 1:
+        context.beginPath();
+        context.moveTo(point.x, point.y);
+      case 2:
+        context.lineTo(point.x, point.y);
+        context.stroke();
+        break;
+      default:
     }
+  };
+  const create = signal => (e) => {
+    if (signal === 1) {
+      pressed = true;
+    }
+    if (signal === 1 || pressed) {
+      e = isMobile ? e.touches[0] : e;
+      point.x = e.clientX - left;
+      point.y = e.clientY - top;
+      paint(signal);
+    }
+  };
+  const start = create(1);
+  const move = create(2);
+  const requestAnimationFrame = window.requestAnimationFrame;
+  const optimizedMove = requestAnimationFrame ? (e) => {
+    requestAnimationFrame(() => {
+      move(e);
+    });
+  } : move;
 
-    context.lineWidth = 10;
-    context.strokeStyle = 'black';
-    context.lineCap = 'round';
-    context.imageSmoothingEnabled = true;
-    Object.assign(context, config);
-
-    const { left, top } = canvas.getBoundingClientRect();
-    const point = {};
-    const isMobile = /phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone/i.test(navigator.userAgent);
-    let pressed = false;
-
-    const paint = (signal) => {
-      switch (signal) {
-        case 1:
-          context.beginPath();
-          context.moveTo(point.x, point.y);
-        case 2:
-          context.lineTo(point.x, point.y);
-          context.stroke();
-          break;
-        default:
-      }
-    };
-    const create = signal => (e) => {
-      if (signal === 1) {
-        pressed = true;
-      }
-      if (signal === 1 || pressed) {
-        e = isMobile ? e.touches[0] : e;
-        point.x = e.clientX - left;
-        point.y = e.clientY - top;
-        paint(signal);
-      }
-    };
-    const start = create(1);
-    const move = create(2);
-    const requestAnimationFrame = window.requestAnimationFrame;
-    const optimizedMove = requestAnimationFrame ? (e) => {
-      requestAnimationFrame(() => {
-        move(e);
-      });
-    } : move;
-
-    if (isMobile) {
-      canvas.addEventListener('touchstart', start);
-      canvas.addEventListener('touchmove', optimizedMove);
-    } else {
-      canvas.addEventListener('mousedown', start);
-      canvas.addEventListener('mousemove', optimizedMove);
-      canvas.addEventListener('mouseup', () => {
+  if (isMobile) {
+    canvas.addEventListener('touchstart', start);
+    canvas.addEventListener('touchmove', optimizedMove);
+  } else {
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', optimizedMove);
+    ['mouseup', 'mouseleave'].forEach((event) => {
+      canvas.addEventListener(event, () => {
         pressed = false;
       });
-    }
-    return this;
-  },
+    });
+  }
+}
+Draw.prototype = {
   scale(width, height, canvas = this.canvas) {
     const w = canvas.width;
     const h = canvas.height;
