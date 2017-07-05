@@ -40,6 +40,7 @@ module.exports = {
     'consistent-return': 0,
     'no-bitwise': 0,
     'import/no-unresolved': 0,
-    'no-trailing-spaces': 0
+    'no-trailing-spaces': 0,
+    'no-fallthrough': 0
   }
 }

@@ -1,6 +1,6 @@
 /**
  * Created by louizhai on 17/6/30.
- * description: use canvas to draw.
+ * description: Use canvas to draw.
  */
 function Draw() {}
 Draw.prototype = {
@@ -28,62 +28,59 @@ Draw.prototype = {
       canvas.height = height;
     }
 
-    context.imageSmoothingEnabled = true;
-    context.strokeStyle = 'black';
     context.lineWidth = 10;
+    context.strokeStyle = 'black';
     context.lineCap = 'round';
-    context.lineJoin = 'round';
+    context.imageSmoothingEnabled = true;
     Object.assign(context, config);
 
     const { left, top } = canvas.getBoundingClientRect();
-
-    let paints = [];
+    const point = {};
+    const isMobile = /phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone/i.test(navigator.userAgent);
     let pressed = false;
 
-    const paint = () => {
-      context.beginPath();
-      context.moveTo(paints[0][0], paints[0][1]);
-      if (paints.length !== 1) {
-        paints.forEach((item) => {
-          const x = item[0];
-          const y = item[1];
-          context.lineTo(x, y);
-          context.moveTo(x, y);
-        });
-        paints = [paints.pop()];
+    const paint = (signal) => {
+      switch (signal) {
+        case 1:
+          context.beginPath();
+          context.moveTo(point.x, point.y);
+        case 2:
+          context.lineTo(point.x, point.y);
+          context.stroke();
+          break;
+        default:
       }
-      context.closePath();
-      context.stroke();
     };
-    const fn = (type, status = 0) => (e) => {
-      if (!status) {
-        paints = [];
+    const create = signal => (e) => {
+      if (signal === 1) {
         pressed = true;
       }
-      if (pressed) {
-        e = e.type === type ? e : e.touches[0];
-        const x = e.clientX - left;
-        const y = e.clientY - top;
-        paints.push([x, y]);
-        paint();
+      if (signal === 1 || pressed) {
+        e = isMobile ? e.touches[0] : e;
+        point.x = e.clientX - left;
+        point.y = e.clientY - top;
+        paint(signal);
       }
     };
-    const start = fn('mousedown', 0);
-    const move = fn('mousemove', 1);
-    canvas.addEventListener('mousedown', start);
-    canvas.addEventListener('touchstart', start);
-
+    const start = create(1);
+    const move = create(2);
     const requestAnimationFrame = window.requestAnimationFrame;
-    const callback = requestAnimationFrame ? (e) => {
+    const optimizedMove = requestAnimationFrame ? (e) => {
       requestAnimationFrame(() => {
         move(e);
       });
     } : move;
-    canvas.addEventListener('mousemove', callback);
-    canvas.addEventListener('mouseup', () => {
-      pressed = false;
-    });
-    canvas.addEventListener('touchmove', callback);
+
+    if (isMobile) {
+      canvas.addEventListener('touchstart', start);
+      canvas.addEventListener('touchmove', optimizedMove);
+    } else {
+      canvas.addEventListener('mousedown', start);
+      canvas.addEventListener('mousemove', optimizedMove);
+      canvas.addEventListener('mouseup', () => {
+        pressed = false;
+      });
+    }
     return this;
   },
   scale(width, height, canvas = this.canvas) {
@@ -97,61 +94,75 @@ Draw.prototype = {
       tmpCanvas.width = width;
       tmpCanvas.height = height;
       tmpContext.drawImage(canvas, 0, 0, w, h, 0, 0, width, height);
-      this.canvas = tmpCanvas;
+      canvas = tmpCanvas;
     }
-    return this;
+    return canvas;
   },
-  rotate(step, image = this.canvas) {
-    step = ~~step;
-    if (step !== 0) {
-      const maxStep = 2;
-      const minStep = -1;
-      if (step > maxStep) {
-        step = maxStep;
-      } else if (step < minStep) {
-        step = minStep;
+  rotate(degree, image = this.canvas) {
+    degree = ~~degree;
+    if (degree !== 0) {
+      const maxDegree = 180;
+      const minDegree = -90;
+      if (degree > maxDegree) {
+        degree = maxDegree;
+      } else if (degree < minDegree) {
+        degree = minDegree;
       }
 
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
       const height = image.height;
       const width = image.width;
-      const degree = (step * 90 * Math.PI) / 180;
+      const degreePI = (degree * Math.PI) / 180;
 
-      switch (step) {
+      switch (degree) {
         // 逆时针旋转90°
-        case -1:
+        case -90:
           canvas.width = height;
           canvas.height = width;
-          context.rotate(degree);
+          context.rotate(degreePI);
           context.drawImage(image, -width, 0);
           break;
         // 顺时针旋转90°
-        case 1:
+        case 90:
           canvas.width = height;
           canvas.height = width;
-          context.rotate(degree);
+          context.rotate(degreePI);
           context.drawImage(image, 0, -height);
           break;
         // 顺时针旋转180°
-        case 2:
+        case 180:
           canvas.width = width;
           canvas.height = height;
-          context.rotate(degree);
+          context.rotate(degreePI);
           context.drawImage(image, -width, -height);
           break;
         default:
       }
-      this.canvas = canvas;
+      image = canvas;
     }
-    return this;
+    return image;
   },
   getPNGImage(canvas = this.canvas) {
     return canvas.toDataURL('image/png');
   },
-  downloadPNGImage(image) {
-    const url = image.replace('image/png', 'image/octet-stream;Content-Disposition:attachment;filename=test.png');
+  getJPGImage(canvas = this.canvas) {
+    return canvas.toDataURL('image/jpeg', 0.5);
+  },
+  downloadPNGImage(image, type = 'png') {
+    const url = image.replace(`image/${type}`, `image/octet-stream;Content-Disposition:attachment;filename=test.${type}`);
     window.location.href = url;
+  },
+  dataURLtoBlob(dataURL) {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bStr = atob(arr[1]);
+    let n = bStr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bStr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
   },
   clear() {
     this.context.clearRect(0, 0, this.width, this.height);

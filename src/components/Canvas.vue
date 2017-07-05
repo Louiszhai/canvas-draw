@@ -27,6 +27,20 @@ export default {
       this.initCanvas();
     });
   },
+  computed: {
+    getHorizontalStyle() {
+      const d = document;
+      this.w = window.innerWidth || d.documentElement.clientWidth || d.body.clientWidth;
+      this.h = window.innerHeight || d.documentElement.clientHeight || d.body.clientHeight;
+      const length = (this.h - this.w) / 2;
+      return {
+        transform: `rotate(90deg) translate(${length}px,${length}px)`,
+        width: `${this.h}px`,
+        height: `${this.w}px`,
+        transformOrigin: 'center center',
+      };
+    },
+  },
   methods: {
     initCanvas() {
       const canvas = document.querySelector('canvas');
@@ -36,7 +50,8 @@ export default {
       this.draw.clear();
     },
     download() {
-      this.draw.downloadPNGImage(this.draw.getPNGImage());
+      const canvas = this.draw.rotate(180);
+      this.draw.downloadPNGImage(this.draw.getJPGImage(canvas), 'jpeg');
     },
   },
 };
