@@ -2,7 +2,7 @@
  * Created by louizhai on 17/6/30.
  * description: Use canvas to draw.
  */
-function Draw(canvas, config = {}) {
+function Draw(canvas, degree, config = {}) {
   if (!(this instanceof Draw)) {
     return new Draw(canvas, config);
   }
@@ -29,11 +29,12 @@ function Draw(canvas, config = {}) {
     canvas.height = height;
   }
 
-  context.lineWidth = 10;
+  context.lineWidth = 6;
   context.strokeStyle = 'black';
   context.lineCap = 'round';
   context.lineJoin = 'round';
-  context.imageSmoothingEnabled = true;
+  context.shadowBlur = 1;
+  context.shadowColor = 'black';
   Object.assign(context, config);
 
   const { left, top } = canvas.getBoundingClientRect();
@@ -84,6 +85,24 @@ function Draw(canvas, config = {}) {
         pressed = false;
       });
     });
+  }
+
+  // 重置画布坐标系
+  if (typeof degree === 'number') {
+    this.degree = degree;
+    context.rotate((degree * Math.PI) / 180);
+    switch (degree) {
+      case -90:
+        context.translate(-height, 0);
+        break;
+      case 90:
+        context.translate(0, -width);
+        break;
+      case -180:
+      case 180:
+        context.translate(-width, -height);
+      default:
+    }
   }
 }
 Draw.prototype = {
@@ -169,7 +188,19 @@ Draw.prototype = {
     return new Blob([u8arr], { type: mime });
   },
   clear() {
-    this.context.clearRect(0, 0, this.width, this.height);
+    let width;
+    let height;
+    switch (this.degree) {
+      case -90:
+      case 90:
+        width = this.height;
+        height = this.width;
+        break;
+      default:
+        width = this.width;
+        height = this.height;
+    }
+    this.context.clearRect(0, 0, width, height);
   },
 };
 export default Draw;

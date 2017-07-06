@@ -27,3 +27,7 @@ npm run build
 # build for production and view the bundle analyzer report
 npm run build --report
 ```
+
+## How to use
+
+http://louiszhai.github.io/2017/07/05/canvas-draw/
