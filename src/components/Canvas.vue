@@ -17,7 +17,7 @@ export default {
   data() {
     return {
       msg: 'Just use canvas to draw',
-      degree: 180, // 屏幕整体旋转的角度, 可取 -90,90,180等值
+      degree: 0, // 屏幕整体旋转的角度, 可取 -90,90,180等值
     };
   },
   components: {
