@@ -51,18 +51,18 @@ export default {
   computed: {
     getHorizontalStyle() {
       const d = document;
-      this.w = window.innerWidth || d.documentElement.clientWidth || d.body.clientWidth;
-      this.h = window.innerHeight || d.documentElement.clientHeight || d.body.clientHeight;
-      let length = (this.h - this.w) / 2;
-      let width = this.w;
-      let height = this.h;
+      const w = window.innerWidth || d.documentElement.clientWidth || d.body.clientWidth;
+      const h = window.innerHeight || d.documentElement.clientHeight || d.body.clientHeight;
+      let length = (h - w) / 2;
+      let width = w;
+      let height = h;
 
       switch (this.degree) {
         case -90:
           length = -length;
         case 90:
-          width = this.h;
-          height = this.w;
+          width = h;
+          height = w;
           break;
         default:
           length = 0;
@@ -92,6 +92,19 @@ export default {
     },
     download() {
       this.draw.downloadPNGImage(this.draw.getPNGImage());
+    },
+    upload() {
+      const image = this.draw.getPNGImage();
+      const blob = this.draw.dataURLtoBlob(image);
+
+      const url = '';
+      const successCallback = (response) => {
+        console.log(response);
+      };
+      const failureCallback = (error) => {
+        console.log(error);
+      };
+      this.draw.upload(blob, url, successCallback, failureCallback);
     },
   },
 };

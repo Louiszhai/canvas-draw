@@ -6,6 +6,9 @@ function Draw(canvas, degree, config = {}) {
   if (!(this instanceof Draw)) {
     return new Draw(canvas, config);
   }
+  if (!canvas) {
+    return;
+  }
   let { width, height } = window.getComputedStyle(canvas, null);
   width = width.replace('px', '');
   height = height.replace('px', '');
@@ -101,6 +104,7 @@ function Draw(canvas, degree, config = {}) {
       case -180:
       case 180:
         context.translate(-width, -height);
+        break;
       default:
     }
   }
@@ -172,8 +176,8 @@ Draw.prototype = {
   getJPGImage(canvas = this.canvas) {
     return canvas.toDataURL('image/jpeg', 0.5);
   },
-  downloadPNGImage(image, type = 'png') {
-    const url = image.replace(`image/${type}`, `image/octet-stream;Content-Disposition:attachment;filename=test.${type}`);
+  downloadPNGImage(image) {
+    const url = image.replace('image/png', 'image/octet-stream;Content-Disposition:attachment;filename=test.png');
     window.location.href = url;
   },
   dataURLtoBlob(dataURL) {
@@ -201,6 +205,29 @@ Draw.prototype = {
         height = this.height;
     }
     this.context.clearRect(0, 0, width, height);
+  },
+  upload(blob, url, success, failure) {
+    const formData = new FormData();
+    const xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+    formData.append('image', blob, 'sign');
+
+    xhr.open('POST', url, true);
+    xhr.onload = () => {
+      if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+        success(xhr.responseText);
+      } else {
+        failure();
+      }
+    };
+    xhr.onerror = (e) => {
+      if (typeof failure === 'function') {
+        failure(e);
+      } else {
+        console.log(`upload img error: ${e}`);
+      }
+    };
+    xhr.send(formData);
   },
 };
 export default Draw;
