@@ -4,6 +4,9 @@
       <span>{{msg}}</span>
       <a @touchstart="clear" @mousedown="clear">清屏</a>
       <a @touchstart="download" @mousedown="download">下载</a>
+      <select v-model="degree">
+        <option v-for="item in scope" :value="item.value">{{item.title}}</option>
+      </select>
     </div>
     <canvas></canvas>
   </div>
@@ -18,15 +21,32 @@ export default {
     return {
       msg: 'Just use canvas to draw',
       degree: 0, // 屏幕整体旋转的角度, 可取 -90,90,180等值
+      scope: [
+        {
+          value: 0,
+          title: '正常',
+        },
+        {
+          value: 90,
+          title: '顺时针旋转90°',
+        },
+        {
+          value: 180,
+          title: '顺时针旋转180°',
+        },
+        {
+          value: -90,
+          title: '逆时针旋转90°',
+        },
+      ],
     };
   },
   components: {
     Draw,
   },
   mounted() {
-    setTimeout(() => {
-      this.initCanvas();
-    });
+    this.canvasBox = document.getElementById('canvasBox');
+    this.initCanvas();
   },
   computed: {
     getHorizontalStyle() {
@@ -46,6 +66,13 @@ export default {
           break;
         default:
           length = 0;
+      }
+      if (this.canvasBox) {
+        this.canvasBox.removeChild(document.querySelector('canvas'));
+        this.canvasBox.appendChild(document.createElement('canvas'));
+        setTimeout(() => {
+          this.initCanvas();
+        }, 200);
       }
       return {
         transform: `rotate(${this.degree}deg) translate(${length}px,${length}px)`,
@@ -72,22 +99,25 @@ export default {
 
 </script>
 
-<style scoped>
+<style>
 #canvasBox {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 .greet {
-  padding: 1rem;
-  font-size: 1.5rem;
+  padding: 20px;
+  font-size: 20px;
   user-select: none;
 }
 .greet a {
   cursor: pointer;
 }
+.greet select {
+  font-size: 18px;
+}
 canvas {
   flex: 1;
-  cursor: cross;
+  cursor: crosshair;
 }
 </style>
