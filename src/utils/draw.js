@@ -36,13 +36,16 @@ function Draw(canvas, degree, config = {}) {
   context.strokeStyle = 'black';
   context.lineCap = 'round';
   context.lineJoin = 'round';
-  context.shadowBlur = 1;
-  context.shadowColor = 'black';
   Object.assign(context, config);
 
   const { left, top } = canvas.getBoundingClientRect();
   const point = {};
   const isMobile = /phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone/i.test(navigator.userAgent);
+  // 移动端性能太弱, 去掉模糊以提高手写渲染速度
+  if (!isMobile) {
+    context.shadowBlur = 1;
+    context.shadowColor = 'black';
+  }
   let pressed = false;
 
   const paint = (signal) => {
@@ -58,6 +61,7 @@ function Draw(canvas, degree, config = {}) {
     }
   };
   const create = signal => (e) => {
+    e.preventDefault();
     if (signal === 1) {
       pressed = true;
     }
