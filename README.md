@@ -78,6 +78,7 @@ getStyle() {
 第二步，初始化canvas画布，支持手写，并重置坐标系。
 
 ```js
+import Draw from '../utils/draw';
 initCanvas() {
   const canvas = document.querySelector('canvas');
   this.draw = new Draw(canvas, -this.degree);
