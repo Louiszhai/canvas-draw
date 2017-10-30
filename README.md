@@ -2,7 +2,7 @@
 
 ![License MIT](https://img.shields.io/npm/l/express.svg)
 
-[demo](http://louiszhai.github.io/res/canvasDraw/)
+[demo](http://louiszhai.github.io/res/canvasDraw/)	微信中签名并分享请戳 [sign demo](http://louiszhai.github.io/res/canvasDraw/#/sign)
 
 > use canvas to draw
 
